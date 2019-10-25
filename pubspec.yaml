@@ -32,6 +32,8 @@ dependencies:
   provider: ^3.1.0
   url_launcher: ^5.1.2
   video_player: ^0.10.0+2
+  geolocator: ^5.0.1
+
 
 
   #Firebase

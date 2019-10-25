@@ -22,4 +22,5 @@ class CidadesApi {
 
     return cidades;
   }
+
 }
