@@ -5,7 +5,7 @@ import 'dart:convert' as convert;
 class CidadesApi {
 
   static Future<List<Cidade>> getCidades() async {
-    String url = "http://www.mocky.io/v2/5db3321a3500000f15f55455";
+    String url = "http://www.mocky.io/v2/5db35c0b3000007c0057b621";
 
     print("GET > $url");
 
@@ -21,5 +21,4 @@ class CidadesApi {
 
     return cidades;
   }
-
 }

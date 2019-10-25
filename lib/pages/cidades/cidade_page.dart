@@ -1,4 +1,6 @@
 import 'package:cidade_mapas/imports.dart';
+import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CidadePage extends StatefulWidget {
@@ -15,8 +17,8 @@ class _CidadePageState extends State<CidadePage> {
 
   Cidade get cidade => widget.cidade;
   LatLng latLng;
-
   var _markers = Set<Marker>();
+  double _zoom = 11.0;
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
@@ -30,7 +32,6 @@ class _CidadePageState extends State<CidadePage> {
   }
 
   _loadMarkers() async {
-
     _markers.clear();
 
     final list = Set<Marker>();
@@ -77,15 +78,172 @@ class _CidadePageState extends State<CidadePage> {
   }
 
   _body() {
-    return Center(
-      child: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: latLng,
-          zoom: 11.0,
+    return Stack(
+      children: <Widget>[
+        _map(),
+        _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
+        _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
+        _buildContainer()
+      ],
+    );
+  }
+
+  _buildContainer() {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 20.0),
+        height: 150.0,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: cidade.pontosTuristicos.length,
+          itemBuilder: (context, idx) {
+            PontoTuristico p = cidade.pontosTuristicos[idx];
+
+            return _card(p.urlFoto, p.latlng, p.nome);
+          },
         ),
-        mapType: MapType.normal,
-        markers: _markers,
+      ),
+    );
+  }
+
+  _card(String _image, LatLng latLng, String restaurantName) {
+    return GestureDetector(
+      onTap: () {
+        _gotoLocation(latLng);
+      },
+      child: Container(
+        child: new FittedBox(
+          child: Material(
+            color: Colors.white,
+            elevation: 14.0,
+            borderRadius: BorderRadius.circular(24.0),
+            shadowColor: Color(0x802196F3),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                  width: 180,
+                  height: 200,
+                  child: ClipRRect(
+                    borderRadius: new BorderRadius.circular(24.0),
+                    child: Image(
+                      fit: BoxFit.fill,
+                      image: NetworkImage(_image),
+                    ),
+                  ),
+                ),
+                Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _cardLocal(restaurantName),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  _cardLocal(String _name) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Container(
+              child: Text(
+            _name,
+            style: TextStyle(
+                color: Colors.indigo,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold),
+          )),
+        ),
+        SizedBox(height: 5.0),
+        Container(
+            child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Container(
+              child: Text(
+                "5.0",
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 18.0,
+                ),
+              ),
+            ),
+            _star(),
+            _star(),
+            _star(),
+            _star(),
+            _star(),
+          ],
+        )),
+        SizedBox(height: 5.0),
+        Container(
+            child: Text(
+          "Fechado \u00B7 Abre 9:00",
+          style: TextStyle(
+              color: Colors.black54,
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold),
+        )),
+      ],
+    );
+  }
+
+  Container _star() {
+    return Container(
+      child: Icon(
+        FontAwesomeIcons.solidStar,
+        color: Colors.amber,
+        size: 15.0,
+      ),
+    );
+  }
+
+  Future<void> _gotoLocation(LatLng latLng) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+      target: latLng,
+      zoom: 15,
+      tilt: 50.0,
+      bearing: 45.0,
+    )));
+  }
+
+  _map() {
+    return GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: latLng,
+        zoom: _zoom,
+      ),
+      mapType: MapType.normal,
+      markers: _markers,
+    );
+  }
+
+  _zoomButton(IconData icon, AlignmentGeometry alignment, int value) {
+    return Align(
+      alignment: alignment,
+      child: IconButton(
+        icon: Icon(Icons.zoom_in, color: Color(0xff6200ee)),
+        onPressed: () async {
+          // Incrementa
+          _zoom += value;
+
+          print("Zoom $_zoom");
+
+          // Atualiza
+          final GoogleMapController controller = await _controller.future;
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: latLng, zoom: _zoom)));
+        },
       ),
     );
   }
