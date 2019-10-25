@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cidade_mapas/imports.dart';
 import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -83,61 +84,71 @@ class _CidadePageState extends State<CidadePage> {
         _map(),
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
-        _buildContainer()
+        _listPontosTuristicos()
       ],
     );
   }
 
-  _buildContainer() {
+  _listPontosTuristicos() {
     return Align(
-      alignment: Alignment.bottomLeft,
+      alignment: Alignment.bottomCenter,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 20.0),
         height: 150.0,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: cidade.pontosTuristicos.length,
-          itemBuilder: (context, idx) {
-            PontoTuristico p = cidade.pontosTuristicos[idx];
-
-            return _card(p.urlFoto, p.latlng, p.nome);
-          },
-        ),
+        child: _carrousel(),
       ),
     );
   }
 
-  _card(String _image, LatLng latLng, String restaurantName) {
-    return GestureDetector(
+  _carrousel() {
+    return CarouselSlider(
+      height: 400.0,
+      items: cidade.pontosTuristicos.map<Widget>((p) {
+        return _card(p);
+      }).toList(),
+    );
+  }
+
+  _pageView() {
+    return PageView.builder(
+//          scrollDirection: Axis.horizontal,
+      itemCount: cidade.pontosTuristicos.length,
+      itemBuilder: (context, idx) {
+        PontoTuristico p = cidade.pontosTuristicos[idx];
+
+        return _card(p);
+      },
+    );
+  }
+
+  _card(PontoTuristico p) {
+    return InkWell(
       onTap: () {
-        _gotoLocation(latLng);
+        _goToLocation(p.latlng);
       },
       child: Container(
-        child: new FittedBox(
+        child: FittedBox(
           child: Material(
             color: Colors.white,
-            elevation: 14.0,
+            elevation: 12.0,
             borderRadius: BorderRadius.circular(24.0),
-            shadowColor: Color(0x802196F3),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Container(
-                  width: 180,
+                  width: 200,
                   height: 200,
                   child: ClipRRect(
                     borderRadius: new BorderRadius.circular(24.0),
                     child: Image(
                       fit: BoxFit.fill,
-                      image: NetworkImage(_image),
+                      image: NetworkImage(p.urlFoto),
                     ),
                   ),
                 ),
                 Container(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _cardLocal(restaurantName),
-                  ),
+                  padding: EdgeInsets.all(8.0),
+                  child: _cardDados(p.nome),
                 ),
               ],
             ),
@@ -147,7 +158,7 @@ class _CidadePageState extends State<CidadePage> {
     );
   }
 
-  _cardLocal(String _name) {
+  _cardDados(String _name) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
@@ -164,39 +175,41 @@ class _CidadePageState extends State<CidadePage> {
         ),
         SizedBox(height: 5.0),
         Container(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Container(
-              child: Text(
-                "5.0",
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 18.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Container(
+                child: Text(
+                  "5.0",
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 18.0,
+                  ),
                 ),
               ),
-            ),
-            _star(),
-            _star(),
-            _star(),
-            _star(),
-            _star(),
-          ],
-        )),
+              _star(),
+              _star(),
+              _star(),
+              _star(),
+              _star(),
+            ],
+          ),
+        ),
         SizedBox(height: 5.0),
         Container(
-            child: Text(
-          "Fechado \u00B7 Abre 9:00",
-          style: TextStyle(
-              color: Colors.black54,
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold),
-        )),
+          child: Text(
+            "Fechado \u00B7 Abre 9:00",
+            style: TextStyle(
+                color: Colors.black54,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }
 
-  Container _star() {
+  _star() {
     return Container(
       child: Icon(
         FontAwesomeIcons.solidStar,
@@ -206,14 +219,18 @@ class _CidadePageState extends State<CidadePage> {
     );
   }
 
-  Future<void> _gotoLocation(LatLng latLng) async {
+  Future<void> _goToLocation(LatLng latLng) async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: latLng,
-      zoom: 15,
-      tilt: 50.0,
-      bearing: 45.0,
-    )));
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: latLng,
+          zoom: 15,
+          tilt: 50.0,
+          bearing: 45.0,
+        ),
+      ),
+    );
   }
 
   _map() {
@@ -241,8 +258,14 @@ class _CidadePageState extends State<CidadePage> {
 
           // Atualiza
           final GoogleMapController controller = await _controller.future;
-          controller.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(target: latLng, zoom: _zoom)));
+          controller.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: latLng,
+                zoom: _zoom,
+              ),
+            ),
+          );
         },
       ),
     );

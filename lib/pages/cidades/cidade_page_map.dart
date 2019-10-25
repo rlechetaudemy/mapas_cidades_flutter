@@ -131,7 +131,7 @@ class CidadePageMapState extends State<CidadePageMap> {
     );
   }
 
-  Widget _boxes(String _image, double lat, double long, String restaurantName) {
+  _boxes(String _image, double lat, double long, String restaurantName) {
     return GestureDetector(
       onTap: () {
         _gotoLocation(lat, long);
