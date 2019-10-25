@@ -14,9 +14,8 @@ class CidadesApi {
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body.substring(0,20)}');
 
-    String json = response.body;
-
-    List list = convert.json.decode(json);
+    String sUtf8 = convert.utf8.decode(response.bodyBytes);
+    List list = convert.jsonDecode(sUtf8);
 
     List<Cidade> cidades = list.map<Cidade>((map) => Cidade.fromMap(map)).toList();
 

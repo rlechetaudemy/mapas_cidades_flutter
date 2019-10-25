@@ -1,6 +1,4 @@
 import 'package:cidade_mapas/imports.dart';
-import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
-import 'package:cidade_mapas/pages/cidades/pontos_turisticos_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CidadePage extends StatefulWidget {
@@ -15,14 +13,10 @@ class CidadePage extends StatefulWidget {
 class _CidadePageState extends State<CidadePage> {
   Completer<GoogleMapController> _controller = Completer();
 
-  final _bloc = PontosTuristicosBloc();
-
-  List<PontoTuristico> pontos = [];
   Cidade get cidade => widget.cidade;
   LatLng latLng;
 
-  @protected
-  final markers = Set<Marker>();
+  var _markers = Set<Marker>();
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
@@ -32,13 +26,37 @@ class _CidadePageState extends State<CidadePage> {
   void initState() {
     super.initState();
     latLng = cidade.latlng;
-    _markers();
+    _loadMarkers();
   }
 
-  _markers() async {
-    pontos = await _bloc.fetch();
-    print("Revendas qtde: ${pontos.length}");
-    _initMarkers();
+  _loadMarkers() async {
+
+    _markers.clear();
+
+    final list = Set<Marker>();
+
+    print("init markers: ${cidade.pontosTuristicos}");
+
+    for (int i = 0; i < cidade.pontosTuristicos.length; i++) {
+      final p = cidade.pontosTuristicos[i];
+
+      print(p.nome);
+
+      list.add(
+        Marker(
+          markerId: MarkerId("$i"),
+          position: LatLng(p.lat, p.lng),
+          infoWindow: InfoWindow(title: p.nome),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueBlue,
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      this._markers = list;
+    });
   }
 
   @override
@@ -67,6 +85,7 @@ class _CidadePageState extends State<CidadePage> {
           zoom: 11.0,
         ),
         mapType: MapType.normal,
+        markers: _markers,
       ),
     );
   }
@@ -78,29 +97,6 @@ class _CidadePageState extends State<CidadePage> {
           "https://www.google.com/maps/@${widget.cidade.lat},${widget.cidade.lng},11z");
     } else {
       alert(context, "Este cidade não possui Lat/Lng.");
-    }
-  }
-
-  void _initMarkers() {
-    markers.clear();
-
-    for (int i = 0; i < pontos.length; i++) {
-      final p = pontos[i];
-
-      final latLng = LatLng(p.lat, p.lng);
-
-      markers.add(
-        Marker(
-          markerId: MarkerId("$i"),
-          position: latLng,
-        ),
-      );
-    }
-
-    if (markers.isEmpty) {
-      Future.delayed(Duration(seconds: 1), () {
-        print("Nenhuma revenda encontrada");
-      });
     }
   }
 }
