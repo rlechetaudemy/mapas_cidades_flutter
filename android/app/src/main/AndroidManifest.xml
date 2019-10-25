@@ -10,8 +10,9 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="Cidades"
         android:icon="@mipmap/ic_launcher">
+
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDLEfEnWexACcMzytMhHoc9NHZM1afsneQ"/>
+            android:value="AIzaSyChAziSYUXmSDH53GQ88G8KOpYN-n5jtcE"/>
 
         <activity
             android:name=".MainActivity"

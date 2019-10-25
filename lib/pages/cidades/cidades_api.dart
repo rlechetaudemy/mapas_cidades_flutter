@@ -12,7 +12,7 @@ class CidadesApi {
     final response = await http.get(url);
 
     print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
+    print('Response body: ${response.body.substring(0,20)}');
 
     String json = response.body;
 

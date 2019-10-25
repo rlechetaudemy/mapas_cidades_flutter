@@ -4,7 +4,6 @@ export 'package:cidade_mapas/pages/cidades/cidade.dart';
 export 'package:cidade_mapas/pages/cidades/cidade.dart';
 export 'package:cidade_mapas/pages/cidades/cidades_api.dart';
 export 'package:cidade_mapas/pages/cidades/cidades_bloc.dart';
-export 'package:cidade_mapas/pages/cidades/cidades_list.dart';
 export 'package:cidade_mapas/utils/bloc.dart';
 export 'package:flutter/material.dart';
 export 'package:provider/provider.dart';

@@ -1,7 +1,6 @@
 import 'package:cidade_mapas/imports.dart';
 import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
 import 'package:cidade_mapas/pages/cidades/pontos_turisticos_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CidadePage extends StatefulWidget {
@@ -19,6 +18,8 @@ class _CidadePageState extends State<CidadePage> {
   final _bloc = PontosTuristicosBloc();
 
   List<PontoTuristico> pontos = [];
+  Cidade get cidade => widget.cidade;
+  LatLng latLng;
 
   @protected
   final markers = Set<Marker>();
@@ -30,7 +31,7 @@ class _CidadePageState extends State<CidadePage> {
   @override
   void initState() {
     super.initState();
-
+    latLng = cidade.latlng;
     _markers();
   }
 
@@ -62,7 +63,7 @@ class _CidadePageState extends State<CidadePage> {
       child: GoogleMap(
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
-          target: _center,
+          target: latLng,
           zoom: 11.0,
         ),
         mapType: MapType.normal,
