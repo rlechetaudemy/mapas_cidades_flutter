@@ -13,13 +13,16 @@ class CidadePage extends StatefulWidget {
   _CidadePageState createState() => _CidadePageState();
 }
 
-class _CidadePageState extends State<CidadePage> {
+class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
   Completer<GoogleMapController> _controller = Completer();
 
   Cidade get cidade => widget.cidade;
   LatLng latLng;
   var _markers = Set<Marker>();
   double _zoom = 11.0;
+
+  AnimationController controller;
+  Animation<Offset> offset;
 
   final _blocCard = SimpleBloc<PontoTuristico>();
 
@@ -32,6 +35,16 @@ class _CidadePageState extends State<CidadePage> {
     super.initState();
     latLng = cidade.latlng;
     _loadMarkers();
+    // Animations
+    initAnim();
+  }
+
+  void initAnim() {
+    controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+
+    offset = Tween<Offset>(begin: Offset(0.0, 3.0), end: Offset(0.0, 2.0))
+        .animate(controller);
   }
 
   _loadMarkers() async {
@@ -82,8 +95,15 @@ class _CidadePageState extends State<CidadePage> {
         _map(),
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
-        _listPontosTuristicos()
-//        _cardCidadeAnimado(null)
+//        _listPontosTuristicos()
+        _cardCidadeAnimado(null),
+        SlideTransition(
+          position: offset,
+          child: Container(
+            color: Colors.yellow,
+            height: 200,
+          ),
+        )
       ],
     );
   }
@@ -298,6 +318,7 @@ class _CidadePageState extends State<CidadePage> {
 
   _onClickMapa(LatLng latLng) {
     _blocCard.add(null);
+    controller.reverse();
   }
 
   void _onClickActionMapa() {
@@ -313,6 +334,7 @@ class _CidadePageState extends State<CidadePage> {
   _onClickMarker(PontoTuristico p) {
     print("> ${p.nome}");
     _blocCard.add(p);
+    controller.forward();
   }
 
   @override
