@@ -57,13 +57,14 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
 
       list.add(
         Marker(
-            markerId: MarkerId("$i"),
-            position: LatLng(p.lat, p.lng),
-            infoWindow: InfoWindow(title: p.nome),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueBlue,
-            ),
-            onTap: () => _onClickMarker(p)),
+          markerId: MarkerId("$i"),
+          position: LatLng(p.lat, p.lng),
+          infoWindow: InfoWindow(title: p.nome),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueBlue,
+          ),
+          onTap: () => _onClickMarker(p),
+        ),
       );
     }
 
@@ -95,15 +96,9 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
         _map(),
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
-//        _listPontosTuristicos()
-        _cardCidadeAnimado(null),
-        SlideTransition(
-          position: offset,
-          child: Container(
-            color: Colors.yellow,
-            height: 200,
-          ),
-        )
+//        _listPontosTuristicos(),
+//        _cardCidadeAnimado(null),
+        _cardAnimadoSlide()
       ],
     );
   }
@@ -176,6 +171,16 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
 
         return _cardCidade(p);
       },
+    );
+  }
+
+  _cardAnimadoSlide() {
+    return SlideTransition(
+      position: offset,
+      child: Container(
+        color: Colors.yellow,
+        height: 200,
+      ),
     );
   }
 
