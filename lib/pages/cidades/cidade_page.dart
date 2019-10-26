@@ -21,6 +21,8 @@ class _CidadePageState extends State<CidadePage> {
   var _markers = Set<Marker>();
   double _zoom = 11.0;
 
+  final _blocCard = SimpleBloc<PontoTuristico>();
+
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
   }
@@ -37,22 +39,18 @@ class _CidadePageState extends State<CidadePage> {
 
     final list = Set<Marker>();
 
-    print("init markers: ${cidade.pontosTuristicos}");
-
     for (int i = 0; i < cidade.pontosTuristicos.length; i++) {
       final p = cidade.pontosTuristicos[i];
 
-      print(p.nome);
-
       list.add(
         Marker(
-          markerId: MarkerId("$i"),
-          position: LatLng(p.lat, p.lng),
-          infoWindow: InfoWindow(title: p.nome),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueBlue,
-          ),
-        ),
+            markerId: MarkerId("$i"),
+            position: LatLng(p.lat, p.lng),
+            infoWindow: InfoWindow(title: p.nome),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueBlue,
+            ),
+            onTap: () => _onClickMarker(p)),
       );
     }
 
@@ -70,7 +68,7 @@ class _CidadePageState extends State<CidadePage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.place),
-            onPressed: () => _onClickMapa(context),
+            onPressed: _onClickActionMapa,
           ),
         ],
       ),
@@ -85,7 +83,47 @@ class _CidadePageState extends State<CidadePage> {
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
         _listPontosTuristicos()
+//        _cardCidadeAnimado(null)
       ],
+    );
+  }
+
+  _map() {
+    return GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: latLng,
+        zoom: _zoom,
+      ),
+      mapType: MapType.normal,
+      markers: _markers,
+      onTap: _onClickMapa,
+    );
+  }
+
+  _zoomButton(IconData icon, AlignmentGeometry alignment, int value) {
+    return Align(
+      alignment: alignment,
+      child: IconButton(
+        icon: Icon(Icons.zoom_in, color: Color(0xff6200ee)),
+        onPressed: () async {
+          // Incrementa
+          _zoom += value;
+
+          print("Zoom $_zoom");
+
+          // Atualiza
+          final GoogleMapController controller = await _controller.future;
+          controller.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: latLng,
+                zoom: _zoom,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -104,7 +142,7 @@ class _CidadePageState extends State<CidadePage> {
     return CarouselSlider(
       height: 400.0,
       items: cidade.pontosTuristicos.map<Widget>((p) {
-        return _card(p);
+        return _cardCidade(p);
       }).toList(),
     );
   }
@@ -116,12 +154,37 @@ class _CidadePageState extends State<CidadePage> {
       itemBuilder: (context, idx) {
         PontoTuristico p = cidade.pontosTuristicos[idx];
 
-        return _card(p);
+        return _cardCidade(p);
       },
     );
   }
 
-  _card(PontoTuristico p) {
+  _cardCidadeAnimado(PontoTuristico p) {
+    return StreamBuilder(
+      stream: _blocCard.stream,
+//      initialData: null,
+      builder: (context, snapshot) {
+        print("> stream ${snapshot.data}");
+
+        PontoTuristico p = snapshot.data;
+        double height = p == null ? 0 : 150;
+
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              height: height,
+              margin: EdgeInsets.only(left: 16, right: 16),
+              child: p != null ? _cardCidade(p) : Container(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _cardCidade(PontoTuristico p) {
     return InkWell(
       onTap: () {
         _goToLocation(p.latlng);
@@ -219,7 +282,7 @@ class _CidadePageState extends State<CidadePage> {
     );
   }
 
-  Future<void> _goToLocation(LatLng latLng) async {
+  _goToLocation(LatLng latLng) async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -233,45 +296,11 @@ class _CidadePageState extends State<CidadePage> {
     );
   }
 
-  _map() {
-    return GoogleMap(
-      onMapCreated: _onMapCreated,
-      initialCameraPosition: CameraPosition(
-        target: latLng,
-        zoom: _zoom,
-      ),
-      mapType: MapType.normal,
-      markers: _markers,
-    );
+  _onClickMapa(LatLng latLng) {
+    _blocCard.add(null);
   }
 
-  _zoomButton(IconData icon, AlignmentGeometry alignment, int value) {
-    return Align(
-      alignment: alignment,
-      child: IconButton(
-        icon: Icon(Icons.zoom_in, color: Color(0xff6200ee)),
-        onPressed: () async {
-          // Incrementa
-          _zoom += value;
-
-          print("Zoom $_zoom");
-
-          // Atualiza
-          final GoogleMapController controller = await _controller.future;
-          controller.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: latLng,
-                zoom: _zoom,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _onClickMapa(context) {
+  void _onClickActionMapa() {
     print(widget.cidade);
     if (widget.cidade.lat != null && widget.cidade.lng != null) {
       launch(
@@ -279,5 +308,17 @@ class _CidadePageState extends State<CidadePage> {
     } else {
       alert(context, "Este cidade não possui Lat/Lng.");
     }
+  }
+
+  _onClickMarker(PontoTuristico p) {
+    print("> ${p.nome}");
+    _blocCard.add(p);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _blocCard.dispose();
   }
 }
