@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="br.com.livroandroid.carros">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,7 +14,8 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="Cidades"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        tools:ignore="GoogleAppIndexingWarning">
 
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyChAziSYUXmSDH53GQ88G8KOpYN-n5jtcE"/>

@@ -4,6 +4,29 @@ import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+class AnimInfo {
+  bool show = false;
+  PontoTuristico pontoTuristico;
+
+  AnimInfo({this.pontoTuristico, this.show});
+}
+
+class AnimBloc extends SimpleBloc<AnimInfo> {
+  // Estado da animação
+  AnimInfo state = AnimInfo(show: false);
+
+  void close() {
+    state.show = false;
+    add(state);
+  }
+
+  void show(PontoTuristico p) {
+    state.show = true;
+    state.pontoTuristico = p;
+    add(state);
+  }
+}
+
 class CidadePage extends StatefulWidget {
   final Cidade cidade;
 
@@ -24,7 +47,7 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
   AnimationController controller;
   Animation<Offset> offset;
 
-  final _blocCard = SimpleBloc<PontoTuristico>();
+  final _blocCard = AnimBloc();
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
@@ -96,9 +119,9 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
         _map(),
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
-//        _listPontosTuristicos(),
-//        _cardCidadeAnimado(null),
-        _cardAnimadoSlide()
+        _carroselPontosTuristicos(),
+//        _cardAnimatedContainer(),
+//        _cardSlideTransition()
       ],
     );
   }
@@ -142,23 +165,19 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
     );
   }
 
-  _listPontosTuristicos() {
+  _carroselPontosTuristicos() {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 20.0),
         height: 150.0,
-        child: _carrousel(),
+        child: CarouselSlider(
+          height: 400.0,
+          items: cidade.pontosTuristicos.map<Widget>((p) {
+            return _cardPontoTuristico(p);
+          }).toList(),
+        ),
       ),
-    );
-  }
-
-  _carrousel() {
-    return CarouselSlider(
-      height: 400.0,
-      items: cidade.pontosTuristicos.map<Widget>((p) {
-        return _cardCidade(p);
-      }).toList(),
     );
   }
 
@@ -169,30 +188,42 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
       itemBuilder: (context, idx) {
         PontoTuristico p = cidade.pontosTuristicos[idx];
 
-        return _cardCidade(p);
+        return _cardPontoTuristico(p);
       },
     );
   }
 
-  _cardAnimadoSlide() {
+  _cardSlideTransition() {
     return SlideTransition(
       position: offset,
       child: Container(
-        color: Colors.yellow,
+        padding: EdgeInsets.all(20),
         height: 200,
+        child: StreamBuilder<AnimInfo>(
+          stream: _blocCard.stream,
+          initialData: AnimInfo(show: false),
+          builder: (context, snapshot) {
+
+            AnimInfo animInfo = snapshot.data;
+
+            return _cardPontoTuristico(animInfo.pontoTuristico);
+          },
+        ),
       ),
     );
   }
 
-  _cardCidadeAnimado(PontoTuristico p) {
-    return StreamBuilder(
+  _cardAnimatedContainer() {
+    return StreamBuilder<AnimInfo>(
       stream: _blocCard.stream,
-//      initialData: null,
+      initialData: AnimInfo(show: false),
       builder: (context, snapshot) {
-        print("> stream ${snapshot.data}");
 
-        PontoTuristico p = snapshot.data;
-        double height = p == null ? 0 : 150;
+        AnimInfo animInfo = snapshot.data;
+
+        // Troca a altura de 0 para 150
+        // O AnimatedContainer cuida da animação
+        double height = animInfo.show ? 150 : 0;
 
         return Align(
           alignment: Alignment.bottomCenter,
@@ -201,7 +232,7 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
               duration: Duration(milliseconds: 500),
               height: height,
               margin: EdgeInsets.only(left: 16, right: 16),
-              child: p != null ? _cardCidade(p) : Container(),
+              child: _cardPontoTuristico(animInfo.pontoTuristico),
             ),
           ),
         );
@@ -209,7 +240,7 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
     );
   }
 
-  _cardCidade(PontoTuristico p) {
+  _cardPontoTuristico(PontoTuristico p) {
     return InkWell(
       onTap: () {
         _goToLocation(p.latlng);
@@ -228,15 +259,15 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
                   height: 200,
                   child: ClipRRect(
                     borderRadius: new BorderRadius.circular(24.0),
-                    child: Image(
+                    child: p != null ? Image(
                       fit: BoxFit.fill,
                       image: NetworkImage(p.urlFoto),
-                    ),
+                    ) : FlutterLogo(),
                   ),
                 ),
                 Container(
                   padding: EdgeInsets.all(8.0),
-                  child: _cardDados(p.nome),
+                  child: _cardDados(p?.nome ?? ""),
                 ),
               ],
             ),
@@ -254,12 +285,12 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
           padding: const EdgeInsets.only(left: 8.0),
           child: Container(
               child: Text(
-            _name,
-            style: TextStyle(
-                color: Colors.indigo,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          )),
+                _name,
+                style: TextStyle(
+                    color: Colors.indigo,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold),
+              )),
         ),
         SizedBox(height: 5.0),
         Container(
@@ -322,7 +353,7 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
   }
 
   _onClickMapa(LatLng latLng) {
-    _blocCard.add(null);
+    _blocCard.close();
     controller.reverse();
   }
 
@@ -330,7 +361,8 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
     print(widget.cidade);
     if (widget.cidade.lat != null && widget.cidade.lng != null) {
       launch(
-          "https://www.google.com/maps/@${widget.cidade.lat},${widget.cidade.lng},11z");
+          "https://www.google.com/maps/@${widget.cidade.lat},${widget.cidade
+              .lng},11z");
     } else {
       alert(context, "Este cidade não possui Lat/Lng.");
     }
@@ -338,7 +370,7 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
 
   _onClickMarker(PontoTuristico p) {
     print("> ${p.nome}");
-    _blocCard.add(p);
+    _blocCard.show(p);
     controller.forward();
   }
 

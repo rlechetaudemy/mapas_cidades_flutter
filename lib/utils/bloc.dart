@@ -1,3 +1,4 @@
+import 'package:cidade_mapas/pages/cidades/ponto_turistico.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SimpleBloc<T> {
@@ -23,6 +24,8 @@ class SimpleBloc<T> {
   void dispose() {
     _controller.close();
   }
+
+
 }
 
 class BooleanBloc extends SimpleBloc<bool> {
