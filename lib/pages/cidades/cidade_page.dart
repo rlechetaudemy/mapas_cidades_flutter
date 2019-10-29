@@ -119,9 +119,9 @@ class _CidadePageState extends State<CidadePage> with TickerProviderStateMixin {
         _map(),
         _zoomButton(Icons.zoom_out, Alignment.topLeft, -1),
         _zoomButton(Icons.zoom_in, Alignment.topRight, 1),
-        _carroselPontosTuristicos(),
-//        _cardAnimatedContainer(),
-//        _cardSlideTransition()
+//        _carroselPontosTuristicos(),  // Exemplo 1
+//        _cardAnimatedContainer(),   // Exemplo 2
+        _cardSlideTransition()      // Exemplo 3
       ],
     );
   }
