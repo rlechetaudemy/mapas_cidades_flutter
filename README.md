@@ -1,16 +1,15 @@
-# Mapa e Cidades
+# Mapas e Cidades
+App simples de cidades que mostra os pontos turísticos de um mapa.
 
-Exemplo de aplicativo com mapas no Android.
+Utiliza um mock de json que coloquei aqui como API:
+http://www.mocky.io/v2/5db35e0a300000500057b628
 
-## Getting Started
+## Projeto utiliza:
 
-This project is a starting point for a Flutter application.
+* RxDart : https://pub.dev/packages/carousel_slider
+* Animações com AnimatedContainer e SlideTransition.
 
-A few resources to get you started if this is your first Flutter project:
+## prints
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img align="left" width="350" src="prints/print1.png">
+<img align="left" width="350" src="prints/print2.png">
